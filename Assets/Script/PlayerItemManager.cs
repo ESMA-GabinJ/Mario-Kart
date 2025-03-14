@@ -5,8 +5,11 @@ using UnityEngine.UI;
 public class PlayerItemManager : MonoBehaviour
 {
     [SerializeField]
+    private string _itemInput = "Item";
+    [SerializeField]
     private List<Item> _itemList;
     
+
     [SerializeField]
     private Item _currentItem;
 
@@ -21,7 +24,7 @@ public class PlayerItemManager : MonoBehaviour
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.X))
+        if(Input.GetButtonDown(_itemInput))
         {
             UseItem();
         }

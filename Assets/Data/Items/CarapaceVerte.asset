@@ -15,4 +15,4 @@ MonoBehaviour:
   itemSprite: {fileID: 21300000, guid: 6af4ad269b1f1d2448d21035d7b28497, type: 3}
   itemName: 
   itemUseCount: 1
-  objectToLaunch: {fileID: 0}
+  objectToLaunch: {fileID: 4669128793864029462, guid: dd515eb7d57777446a2b71fef88de161, type: 3}

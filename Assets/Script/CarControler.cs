@@ -1,11 +1,14 @@
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 public class CarControler : MonoBehaviour
 {
 
+    [SerializeField]
+    private string _hAxisInputName = "Horizontal", _accelerateInputName = "Accelerate";
     [SerializeField]
     private LayerMask _layerMask;
     [SerializeField]
@@ -13,13 +16,14 @@ public class CarControler : MonoBehaviour
 
     private float _speed, _accelerationLerpInterpolator, _rotationInput; 
     [SerializeField]
-    private float _speedMaxBasic = 3, _speedMaxTurbo = 10, _accelerationFactor, _rotationSpeed = 0.5f;
+    private float _speedMaxBasic = 3, _speedMaxTurbo = 10, _accelerationFactor, _rotationSpeed = 0.5f, _maxAngle =360;
     private bool _isAccelerating, _isTurbo;
     private float _terrainSpeedVariator;
 
     [SerializeField]
+    public Transform _carColliderAndMesh;
+    [SerializeField]
     private AnimationCurve _accelerationCurve;
-
 
 
     public void Turbo()
@@ -40,13 +44,13 @@ public class CarControler : MonoBehaviour
     {
 
 
-        _rotationInput = Input.GetAxis("Horizontal");
+        _rotationInput = Input.GetAxis(_hAxisInputName);
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetButtonDown(_accelerateInputName))
         {
             _isAccelerating = true;
         }
-        if (Input.GetKeyUp(KeyCode.Space))
+        if(Input.GetButtonUp(_accelerateInputName))
         {
             _isAccelerating = false;
         }
@@ -68,17 +72,20 @@ public class CarControler : MonoBehaviour
         {
             _terrainSpeedVariator = 1;
         }
+    }
 
-        //var xAngle = transform.eulerAngles.x;
-        //if (xAngle>180)
-        //{
-        //    xAngle = Mathf.Clamp(transform.eulerAngles.x, 0, 40);
-        //    xAngle -= 360;
-        //}
-
-        //var yAngle = transform.eulerAngles.y;
-        //var zAngle = 0;
-        //transform.eulerAngles = new Vector3(xAngle,yAngle,zAngle);
+    private bool IsOnSlope(out RaycastHit hit, out float angle, out float angleZ)
+    {
+        hit = new RaycastHit();
+        angle = 0f;
+        angleZ = 0f;
+        if(Physics.Raycast(transform.position+transform.forward*.5f,Vector3.down,out hit, 0.8f))
+        {
+            angle = Vector3.Angle(Vector3.up, hit.normal);
+            angleZ = Vector3.Angle(Vector3.right, hit.normal);
+            return angle !=  0 && angle<=_maxAngle;
+        }
+        return false;
     }
 
     private void FixedUpdate()
@@ -105,7 +112,17 @@ public class CarControler : MonoBehaviour
             _speed = _accelerationCurve.Evaluate(_accelerationLerpInterpolator)*_speedMaxBasic*_terrainSpeedVariator;
         }
 
-        transform.eulerAngles += Vector3.up * _rotationSpeed * Time.deltaTime*_rotationInput;
-        _rb.MovePosition(transform.position+transform.forward*_speed*Time.fixedDeltaTime);
+        var forward = transform.forward;
+        var angle = 0f;
+        var angleZ = 0f;
+        if(IsOnSlope(out var hit, out angle, out angleZ))
+        {
+            forward = Vector3.ProjectOnPlane(forward, hit.normal).normalized;
+
+        }
+
+        _carColliderAndMesh.eulerAngles =  new Vector3(-angle,_carColliderAndMesh.eulerAngles.y, angleZ);
+        transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + _rotationSpeed * Time.deltaTime * _rotationInput, 0);
+        _rb.MovePosition(transform.position+forward*_speed*Time.fixedDeltaTime);
     }
 }
