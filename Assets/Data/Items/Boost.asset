@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e857ca4b766e6d348a45cccd7d026b40, type: 3}
-  m_Name: TripleChampignon
+  m_Name: Boost
   m_EditorClassIdentifier: 
-  itemSprite: {fileID: 21300000, guid: 6bd31b46cba44044fbdd8a19b2b6085f, type: 3}
+  itemSprite: {fileID: 21300000, guid: ef7a633a9ecb65a48bc258f58fa9e663, type: 3}
   itemName: 
-  itemUseCount: 3
+  itemUseCount: 1

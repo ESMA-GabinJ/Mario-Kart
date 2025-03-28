@@ -16,9 +16,9 @@ public class CarControler : MonoBehaviour
 
     private float _speed, _accelerationLerpInterpolator, _rotationInput; 
     [SerializeField]
-    private float _speedMaxBasic = 3, _speedMaxTurbo = 10, _accelerationFactor, _rotationSpeed = 0.5f, _maxAngle =360;
-    private bool _isAccelerating, _isTurbo;
-    private float _terrainSpeedVariator;
+    private float _speedMaxBasic = 3, _speedMaxTurbo = 20, _accelerationFactor, _rotationSpeed = 0.5f, _maxAngle =360;
+    private bool _isAccelerating, _isBoosting;
+    private float _groundSpeedVariator;
 
     [SerializeField]
     public Transform _carColliderAndMesh;
@@ -26,19 +26,19 @@ public class CarControler : MonoBehaviour
     private AnimationCurve _accelerationCurve;
 
 
-    public void Turbo()
+    public void Boost() //permet de boost si y a pas de boost en cours
     {
-        if (!_isTurbo)
+        if (!_isBoosting)
         {
-            StartCoroutine(Turboroutine());
+            StartCoroutine(Boosting());
         }
     }
 
-    private IEnumerator Turboroutine()
+    private IEnumerator Boosting()
     {
-        _isTurbo = true;
+        _isBoosting = true;
         yield return new WaitForSeconds(3);
-        _isTurbo = false;
+        _isBoosting = false;
     }
     void Update()
     {
@@ -57,20 +57,19 @@ public class CarControler : MonoBehaviour
 
         if (Physics.Raycast(transform.position, transform.up * -1, out var info, 1, _layerMask))
         {
-
-            Terrain terrainBellow = info.transform.GetComponent<Terrain>();
-            if (terrainBellow != null)
+            Ground groundBellow = info.transform.GetComponent<Ground>();
+            if (groundBellow != null)
             {
-                _terrainSpeedVariator = terrainBellow.speedVariator;
+                _groundSpeedVariator = groundBellow.speedVariator;
             }
             else
             {
-                _terrainSpeedVariator = 1;
+                _groundSpeedVariator = 1;
             }
         }
         else
         {
-            _terrainSpeedVariator = 1;
+            _groundSpeedVariator = 1;
         }
     }
 
@@ -103,13 +102,13 @@ public class CarControler : MonoBehaviour
         _accelerationLerpInterpolator = Mathf.Clamp01(_accelerationLerpInterpolator);
         
 
-        if(_isTurbo)
+        if(_isBoosting)
         {
             _speed = _speedMaxTurbo;
         }
         else
         {
-            _speed = _accelerationCurve.Evaluate(_accelerationLerpInterpolator)*_speedMaxBasic*_terrainSpeedVariator;
+            _speed = _accelerationCurve.Evaluate(_accelerationLerpInterpolator)*_speedMaxBasic*_groundSpeedVariator;
         }
 
         var forward = transform.forward;
@@ -124,5 +123,10 @@ public class CarControler : MonoBehaviour
         _carColliderAndMesh.eulerAngles =  new Vector3(-angle,_carColliderAndMesh.eulerAngles.y, angleZ);
         transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + _rotationSpeed * Time.deltaTime * _rotationInput, 0);
         _rb.MovePosition(transform.position+forward*_speed*Time.fixedDeltaTime);
+    }
+    private void OnTriggerEnter(Collider other) //quand on touche le boost accelere
+    {
+        if (other.gameObject.CompareTag("BoostPad"))
+            Boost();
     }
 }

@@ -13,7 +13,7 @@ public class ItemBox : MonoBehaviour
     private float _waitBeforeRespawn = 1;
     private void OnTriggerEnter(Collider other)
     {
-        PlayerItemManager playerItemManagerInContact = other.GetComponent<PlayerItemManager>();
+        PlayerItemManager playerItemManagerInContact = other.GetComponent<PlayerItemManager>(); //donne un item au joueur lorsqu'il le touche
         if(playerItemManagerInContact != null)
         {
             playerItemManagerInContact.GenerateItem();
@@ -21,7 +21,7 @@ public class ItemBox : MonoBehaviour
         }
     }
 
-    private IEnumerator Respawn()
+    private IEnumerator Respawn() //réaparé apres temps de seconde
     {
         _collider.enabled = false;
         _text.enabled = false;
